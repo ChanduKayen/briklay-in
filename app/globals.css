@@ -17,10 +17,10 @@
   --color-cream: var(--cream);
   --color-cream-muted: var(--cream-muted);
   --color-turmeric: var(--turmeric);
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-  --font-serif: var(--font-young), "Iowan Old Style", "Palatino Linotype", Palatino,
-    Georgia, "Times New Roman", serif;
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
 }
 
 body {
