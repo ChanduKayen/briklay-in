@@ -13,7 +13,8 @@ export function startHome() {
     hello: "Hi Briklay, I am planning to build a home in Kakinada and would like to talk.",
     checklist: "Hi Briklay, please send me your full quality checklist for home construction.",
     pride: "Hi Briklay, I would like details of the flats at Bhaskar's The Pride, Vaidya Nagar.",
-    interiors: "Hi, I would like to talk about interiors for my home."
+    interiors: "Hi, I would like to talk about interiors for my home.",
+    homes: "Hi Briklay, I saw your homes on briklay.in. Please send me more photos and details."
   };
   doc.querySelectorAll("[data-wa]").forEach(function (a) { a.href = WA + encodeURIComponent(MESSAGES[a.dataset.wa]); });
   $("ftrEst").href = ESTIMATOR;
@@ -461,6 +462,42 @@ export function startHome() {
       es.forEach(function (e) { e.target.classList.toggle("on", e.isIntersecting || e.boundingClientRect.top < 0); });
     }, { rootMargin: "0px 0px -34% 0px", threshold: 0 });
     qRows.forEach(function (li) { qio.observe(li); });
+  }
+
+  /* ── homes: one photo at a time; it moves on by itself until someone takes over ── */
+  var hRow = $("homesRow"), hItems = [].slice.call(hRow.children), hDots = [].slice.call($("homesDots").children);
+  var hAt = 0, hTick = false, hAuto = null, hTaken = false;
+  function hGo(i) {
+    i = Math.max(0, Math.min(hItems.length - 1, i));
+    hRow.scrollTo({ left: hItems[i].offsetLeft - hItems[0].offsetLeft, behavior: calm ? "auto" : "smooth" });
+  }
+  function hRead() {
+    hTick = false;
+    var x = hRow.scrollLeft, best = 0, d = Infinity, end = x + hRow.clientWidth >= hRow.scrollWidth - 2;
+    hItems.forEach(function (li, i) { var k = Math.abs(li.offsetLeft - hItems[0].offsetLeft - x); if (k < d) { d = k; best = i; } });
+    if (end && window.innerWidth < 800) best = hItems.length - 1;
+    $("homesNext").disabled = end;
+    if (best === hAt) return;
+    hAt = best;
+    hItems.forEach(function (li, i) { li.classList.toggle("on", window.innerWidth < 800 ? i === best : i === best || i === best + 1); });
+    hDots.forEach(function (o, i) { o.classList.toggle("on", i === best); });
+    $("homesCount").textContent = (best + 1) + " / " + hItems.length;
+    $("homesPrev").disabled = best === 0;
+  }
+  function hStop() { hTaken = true; clearInterval(hAuto); hAuto = null; }
+  function hPlay() {
+    if (calm || hTaken || hAuto) return;
+    hAuto = setInterval(function () { if ($("homesNext").disabled) { hStop(); return; } hGo(hAt + 1); }, 3200);
+  }
+  if (window.innerWidth >= 800) hItems[1].classList.add("on");
+  hRow.addEventListener("scroll", function () { if (!hTick) { hTick = true; requestAnimationFrame(hRead); } }, { passive: true });
+  ["pointerdown", "touchstart", "wheel", "keydown"].forEach(function (ev) { hRow.addEventListener(ev, hStop, { passive: true }); });
+  $("homesPrev").addEventListener("click", function () { hStop(); hGo(hAt - 1); });
+  $("homesNext").addEventListener("click", function () { hStop(); hGo(hAt + 1); });
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) hPlay(); else { clearInterval(hAuto); hAuto = null; } });
+    }, { threshold: 0.6 }).observe(hRow);
   }
 
   /* ── bar: appears once the first figure has scrolled away, leaves at the close ── */
