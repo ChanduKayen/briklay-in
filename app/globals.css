@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
 :root {
+  /* brand */
   --teal: #0e3b3c;
   --teal-deep: #0a2c2d;
   --cream: #f1e6cf;
   --cream-muted: #c9bfa8;
+  /* turmeric marks what has been checked; green is the one action colour */
+  --turmeric: #e0a526;
+  --whatsapp: #25d366;
 }
 
 @theme inline {
@@ -12,10 +16,11 @@
   --color-teal-deep: var(--teal-deep);
   --color-cream: var(--cream);
   --color-cream-muted: var(--cream-muted);
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-    "Times New Roman", serif;
+  --color-turmeric: var(--turmeric);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-young), "Iowan Old Style", "Palatino Linotype", Palatino,
+    Georgia, "Times New Roman", serif;
 }
 
 body {

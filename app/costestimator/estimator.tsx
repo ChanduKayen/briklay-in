@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DEPTS, type Tier } from "./data";
-import { ARCH_PATH } from "./logo-path";
+import { ARCH_PATH } from "../_lib/arch-path";
+import { WHATSAPP_NUMBER } from "../_lib/contact";
 import {
   DEFAULT_INPUTS,
   STILT_MOD,
@@ -24,9 +25,6 @@ import {
   type Selections,
   type Stilt,
 } from "./pricing";
-
-/** Estimates are sent to this WhatsApp number (country code, no plus). */
-const WHATSAPP_NUMBER = "918330972705";
 
 const PAGES = ["intro", "plot", ...DEPTS.map((d) => d.id), "summary"];
 
@@ -187,6 +185,25 @@ export default function Estimator() {
   const total = calcTotal(plot, sel);
   const pid = PAGES[cp];
   const isLast = cp === PAGES.length - 1;
+
+  // Arriving from the home page with a plot already entered (?w=30&d=40&floors=2):
+  // carry it over and open straight on the plot step.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const w = parseFloat(q.get("w") ?? "");
+    const d = parseFloat(q.get("d") ?? "");
+    if (!(w > 0) || !(d > 0)) return;
+    const floors = parseInt(q.get("floors") ?? "", 10);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the query string only exists in the browser
+    setInputs((prev) => ({
+      ...prev,
+      plotW: String(w),
+      plotL: String(d),
+      floors: floors >= 1 && floors <= 5 ? String(floors) : prev.floors,
+    }));
+    setSplash("gone");
+    setCp(1);
+  }, []);
 
   useEffect(() => {
     tabRow.current
