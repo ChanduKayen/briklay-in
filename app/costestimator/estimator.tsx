@@ -1,13 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DEPTS, type Tier } from "./data";
 import { ARCH_PATH } from "../_lib/arch-path";
 import { WHATSAPP_NUMBER } from "../_lib/contact";
 import {
   DEFAULT_INPUTS,
-  STILT_MOD,
-  baseRate,
+  STILT_RATE,
   calcTotal,
   defaultSelections,
   deptStrip,
@@ -186,7 +186,7 @@ export default function Estimator() {
   const pid = PAGES[cp];
   const isLast = cp === PAGES.length - 1;
 
-  // Arriving from the home page with a plot already entered (?w=30&d=40&floors=2):
+  // Arriving from the home page with a plot already entered (?w=30&d=40&floors=2&stilt=0):
   // carry it over and open straight on the plot step.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -194,12 +194,14 @@ export default function Estimator() {
     const d = parseFloat(q.get("d") ?? "");
     if (!(w > 0) || !(d > 0)) return;
     const floors = parseInt(q.get("floors") ?? "", 10);
+    const stilt = (["full-stilt", "partial-stilt", "no-stilt"] as const)[parseInt(q.get("stilt") ?? "", 10)];
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the query string only exists in the browser
     setInputs((prev) => ({
       ...prev,
       plotW: String(w),
       plotL: String(d),
       floors: floors >= 1 && floors <= 5 ? String(floors) : prev.floors,
+      stilt: stilt ?? prev.stilt,
     }));
     setSplash("gone");
     setCp(1);
@@ -266,8 +268,7 @@ export default function Estimator() {
   );
 
   const showResult = Boolean(plot.plotL && plot.plotW && plot.slab > 0);
-  const base = baseRate(plot.totalSft);
-  const stiltMod = STILT_MOD[plot.stilt] || 1;
+  const base = STILT_RATE[plot.stilt];
   const waHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappText(plot, sel))}`;
 
   return (
@@ -345,9 +346,12 @@ export default function Estimator() {
       )}
 
       <div className="topbar">
-        <div className="brand">
-          <Logo className="topbar-logo" label="Briklay" />
-        </div>
+        <Link className="brand" href="/" aria-label="Briklay home">
+          <svg className="brand-back" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <Logo className="topbar-logo" />
+        </Link>
         <div className="top-right">
           <button type="button" className="bp-btn" onClick={() => setSheetOpen(true)}>
             Blueprint
@@ -526,13 +530,13 @@ export default function Estimator() {
                 <div className="k">Total built-up area</div>
               </div>
               <div className="res-item">
-                <div className="v">{fmt(Math.round(base * stiltMod))}</div>
-                <div className="k">Base rate / sft (standard)</div>
+                <div className="v">{fmt(base)}</div>
+                <div className="k">Starting rate / sft (standard)</div>
               </div>
             </div>
             <div className="res-note">
-              {n(plot.totalSft)} sft total ({n(plot.slab)} sft/floor × {plot.floors} floors). Base
-              rate ₹{n(base)}/sft for this project size with {stiltLabel(plot.stilt)}.
+              {n(plot.totalSft)} sft total ({n(plot.slab)} sft/floor × {plot.floors} floors).
+              Starting rate ₹{n(base)}/sft with {stiltLabel(plot.stilt)}.
             </div>
           </div>
         </div>

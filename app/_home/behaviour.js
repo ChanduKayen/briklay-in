@@ -43,23 +43,21 @@ export function startHome() {
     { say: "G+3", name: "G+3", sub: "Ground and three floors above" },
     { say: "G+4", name: "G+4", sub: "Ground and four floors above" }
   ];
-  // same model as the cost estimator, at standard specification
+  // the starting rate depends on what stands at ground level
   var STILT = [
-    { say: "stilt parking", sub: "The whole ground level is open parking.", mult: 1, why: "" },
-    { say: "part stilt", sub: "Parking, with a room or two beside it.", mult: 1.1, why: "Rooms beside the parking add walls and finishes at ground level." },
-    { say: "no stilt", sub: "Every floor is built. Parking is a bay inside the ground floor.", mult: 1.05, why: "With no stilt, the ground floor is built and finished like the rest." }
+    { say: "stilt parking", sub: "The whole ground level is open parking.", rate: 2000 },
+    { say: "part stilt", sub: "Parking, with a room or two beside it.", rate: 2100 },
+    { say: "no stilt", sub: "Every floor is built. Parking is a bay inside the ground floor.", rate: 2200 }
   ];
   var home = { w: 30, d: 40, floors: 2, stilt: 0 };
-  var baseRate = function (sft) { return sft < 5000 ? 2100 : 2000; };
   function money(v) {
     if (v >= 10000000) return "₹" + (v / 10000000).toFixed(2) + " crore";
     return "₹" + (v / 100000).toFixed(1) + " lakh";
   }
   function price() {
     var slab = Math.round(Math.max(0, home.d - SETBACK.front - SETBACK.rear) * Math.max(0, home.w - SETBACK.left - SETBACK.right));
-    var sft = slab * home.floors, st = STILT[home.stilt], base = baseRate(sft);
-    var rate = Math.round(base * st.mult / 10) * 10;
-    return { slab: slab, sft: sft, rate: rate, total: rate * sft, base: base, st: st };
+    var sft = slab * home.floors, st = STILT[home.stilt];
+    return { slab: slab, sft: sft, rate: st.rate, total: st.rate * sft, st: st };
   }
 
   /* the figure: only the characters that change turn over */
@@ -95,7 +93,16 @@ export function startHome() {
     });
     group.style.setProperty("--k", idx);
   }
-  var ownChip = $("plot-own");
+  var ownChip = $("plot-own"), bld = $("bld"), levels = [].slice.call(bld.querySelectorAll("i")).reverse();
+  var buzz = function () { try { if (navigator.vibrate) navigator.vibrate(8); } catch {} };
+  function draw() {
+    // one storey for each floor above the ground level; the ground level shows what stands there
+    levels.forEach(function (el, i) { el.classList.toggle("on", i < home.floors - 1); });
+    var w = Math.round(50 + Math.max(0, Math.min(1, (home.w - 20) / 50)) * 50) + "px";
+    bld.style.setProperty("--w", w); bld.parentNode.style.setProperty("--w", w);
+    bld.style.setProperty("--wall", ["0%", "50%", "100%"][home.stilt]);
+    $("dimText").textContent = home.w + " × " + home.d + " ft";
+  }
   function render() {
     $("st-0").disabled = home.floors === 1; // a single ground floor cannot be all parking
     if (home.floors === 1 && home.stilt === 0) home.stilt = 2;
@@ -106,35 +113,41 @@ export function startHome() {
       b.setAttribute("aria-pressed", String(on)); if (on) preset = true;
     });
     ownChip.setAttribute("aria-pressed", String(!preset));
-    ownChip.textContent = preset ? "Other size" : plot;
+    ownChip.textContent = preset ? "Other" : plot;
     pick($("floors"), home.floors); pick($("stilt"), home.stilt);
+    draw();
     $("floorsHint").textContent = fl.sub;
     $("stiltNote").textContent = p.st.sub;
-    $("ansPre").innerHTML = "A <b>" + fl.say + "</b> home on a <b>" + esc(plot) + " ft</b> plot starts from";
+    STILT.forEach(function (st, i) { $("st-" + i + "-d").textContent = "₹" + n(st.rate) + " per sq ft"; });
+    $("ansPre").innerHTML = "<b>" + (home.floors === 1 ? "Ground-floor" : fl.name) + " home</b> on a " + esc(plot) + " ft plot";
     var text = p.total ? money(p.total) : "—";
     roll(text);
-    if (p.total) {
-      $("ansLine").textContent = n(p.sft) + " sq ft, from ₹" + n(p.rate) + " per sq ft";
-      $("ansWhy").textContent = p.st.why || (p.base > 2000 ? "Homes under 5,000 sq ft start a little higher." : "This is our starting rate.");
-    } else {
-      $("ansLine").textContent = "Nothing is left to build on after setbacks";
-      $("ansWhy").textContent = "Try a wider or deeper plot.";
-    }
+    $("ansLine").textContent = p.total ? n(p.sft) + " sq ft, from ₹" + n(p.rate) + " per sq ft" : "Nothing is left to build on after setbacks. Try a wider or deeper plot.";
     $("barSmall").textContent = fl.name + ", " + plot + " ft, from";
     $("barBig").textContent = text;
     var msg = p.total
       ? "Hi Briklay, I want to build a " + fl.say + " home with " + p.st.say + " on a " + plot + " ft plot in Kakinada. Your website shows it starting from " + text + " (" + n(p.sft) + " sq ft, from ₹" + n(p.rate) + " per sq ft). I would like to talk."
       : MESSAGES.hello;
     $("ansWa").href = $("barWa").href = WA + encodeURIComponent(msg);
-    $("ansFull").href = ESTIMATOR + (p.total ? "?w=" + home.w + "&d=" + home.d + "&floors=" + home.floors : "");
+    $("ansFull").href = ESTIMATOR + (p.total ? "?w=" + home.w + "&d=" + home.d + "&floors=" + home.floors + "&stilt=" + home.stilt : "");
   }
   $("plots").addEventListener("click", function (e) {
     var b = e.target.closest(".chip"); if (!b) return;
-    if (b === ownChip) { open(); return; }
-    home.w = Number(b.dataset.w); home.d = Number(b.dataset.d); render();
+    home.w = Number(b.dataset.w); home.d = Number(b.dataset.d); buzz(); render();
   });
-  $("floors").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && !b.disabled) { home.floors = Number(b.dataset.v); render(); } });
-  $("stilt").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && !b.disabled) { home.stilt = Number(b.dataset.v); render(); } });
+  ownChip.addEventListener("click", function () { open(); });
+  // tap a choice; on the row of floors you can also drag across and the price follows the finger
+  function choose(group, key, drag) {
+    var btns = [].slice.call(group.querySelectorAll("button")), held = false;
+    function set(b) { if (!b || b.disabled) return; var v = Number(b.dataset.v); if (home[key] === v) return; home[key] = v; buzz(); render(); }
+    function at(x) { var r = group.getBoundingClientRect(); return btns[Math.max(0, Math.min(btns.length - 1, Math.floor((x - r.left) / (r.width / btns.length))))]; }
+    group.addEventListener("click", function (e) { set(e.target.closest("button")); });
+    if (!drag) return;
+    group.addEventListener("pointerdown", function (e) { if (e.button) return; held = true; try { group.setPointerCapture(e.pointerId); } catch {} });
+    group.addEventListener("pointermove", function (e) { if (held) set(at(e.clientX)); });
+    ["pointerup", "pointercancel"].forEach(function (ev) { group.addEventListener(ev, function (e) { if (held && ev === "pointerup") set(at(e.clientX)); held = false; }); });
+  }
+  choose($("floors"), "floors", true); choose($("stilt"), "stilt", false);
 
   /* ── the sheet: only for a plot size that is not listed ── */
   var wrap = $("sheetWrap"), sheet = $("sheet"), body = $("sheetBody"), closing = 0;
@@ -205,7 +218,7 @@ export function startHome() {
   var scrollY0 = function () { return window.scrollY || window.pageYOffset || 0; };
   function measure() {
     W = stage.clientWidth; H = stage.clientHeight;
-    var top0 = Math.min(Math.max(copy.offsetTop + copy.offsetHeight + 34, H * 0.5), H - 150);
+    var top0 = Math.min(Math.max(copy.offsetTop + copy.offsetHeight + 40, H * 0.5), Math.max(H - 150, copy.offsetTop + copy.offsetHeight + 24));
     var h0 = H - top0, w0 = Math.min(W * 0.6, 300, h0 * 1.15), r = w0 / 2;
     // opened, its curve has left the top of the screen and its sides have left the edges
     var S = Math.max(H / (h0 - r), W / w0) * 1.04;
@@ -499,6 +512,52 @@ export function startHome() {
       es.forEach(function (e) { if (e.isIntersecting) hPlay(); else { clearInterval(hAuto); hAuto = null; } });
     }, { threshold: 0.6 }).observe(hRow);
   }
+
+  /* ── bar: the price in one corner, and a track to slide the green dot along to open the chat ── */
+  var slide = $("slide"), knob = $("barWa"), slSay = $("slSay"), sX0 = 0, sMax = 0, sP = 0, sHeld = false, sMoved = false, sSkip = false, sBack = 0;
+  function sSize() {
+    sMax = slide.clientWidth - knob.offsetWidth - 12;
+    // the show-me glide stops just short of the price, far enough to uncover the words
+    var room = $("barFig").offsetLeft - knob.offsetWidth - 14, need = slSay.offsetWidth + 30;
+    slide.style.setProperty("--half", Math.max(need, Math.min(room, sMax * 0.55)).toFixed(1) + "px");
+    slide.style.setProperty("--figdim", need > room ? "0" : "1");
+  }
+  function sSet(x) { sP = sMax ? x / sMax : 0; slide.style.setProperty("--x", x.toFixed(1) + "px"); slide.style.setProperty("--p", sP.toFixed(3)); }
+  function sRest() { slide.classList.remove("drag", "done"); slSay.textContent = "Slide to chat"; sSet(0); }
+  function sDone() {
+    sSize(); slide.classList.remove("drag", "demo"); slide.classList.add("done"); slSay.textContent = "Opening WhatsApp"; sSet(sMax); buzz();
+    clearTimeout(sBack); sBack = setTimeout(sRest, 1800);
+  }
+  sSize(); window.addEventListener("resize", sSize); if (!calm) slide.classList.add("demo");
+  knob.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  knob.addEventListener("pointerdown", function (e) {
+    if (e.button) return;
+    // if it is caught mid-glide, carry on from where the finger found it
+    var at = 0; try { at = new DOMMatrix(getComputedStyle(knob).transform).m41 || 0; } catch {}
+    sSize(); sHeld = true; sMoved = false; sX0 = e.clientX - at;
+    if (at > 1) { slide.classList.add("drag"); sSet(Math.min(sMax, at)); }
+    slide.classList.remove("demo");
+    try { knob.setPointerCapture(e.pointerId); } catch {}
+  });
+  knob.addEventListener("pointermove", function (e) {
+    if (!sHeld) return;
+    var dx = Math.max(0, Math.min(sMax, e.clientX - sX0));
+    if (!sMoved && dx > 6) { sMoved = true; clearTimeout(sBack); slide.classList.remove("done"); slide.classList.add("drag"); }
+    if (sMoved) { sSet(dx); slSay.textContent = sP > 0.8 ? "Release to chat" : "Slide to chat"; }
+  });
+  ["pointerup", "pointercancel"].forEach(function (ev) {
+    knob.addEventListener(ev, function () {
+      if (!sHeld) return; sHeld = false;
+      if (!sMoved) { slide.classList.remove("drag"); return; } // a plain tap: the click that follows opens the chat
+      sSkip = true; setTimeout(function () { sSkip = false; }, 450); // the browser's own click after a drag is not a second request
+      if (ev === "pointerup" && sP > 0.8) { sDone(); knob.click(); } else sRest();
+    });
+  });
+  knob.addEventListener("click", function (e) {
+    if (!e.isTrusted) return;            // our own click, sent when the slide completes
+    if (sSkip) { e.preventDefault(); sSkip = false; return; }
+    sDone();                             // tapped or pressed Enter: it slides across by itself
+  });
 
   /* ── bar: appears once the first figure has scrolled away, leaves at the close ── */
   var bar = $("bar");
