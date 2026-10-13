@@ -301,7 +301,15 @@ export function startHome() {
       count(f, i, on, !wasOpen);
     });
     dots.forEach(function (d, i) { d.classList.remove("run"); d.classList.toggle("done", i < next - 1); });
+    fit();
     arm();
+  }
+  // while the film is on, the stage is exactly as tall as the screen is right now
+  function fit() {
+    var want = locked || step >= 1 ? window.innerHeight + "px" : "";
+    if (scene.style.getPropertyValue("--stage-h") === want) return;
+    if (want) scene.style.setProperty("--stage-h", want); else scene.style.removeProperty("--stage-h");
+    measure();
   }
   // while the film plays the page itself is held still
   function lock() {
@@ -309,6 +317,7 @@ export function startHome() {
     if (scrollY0() > H * 0.2) window.scrollTo(0, Math.round(H * 0.06)); // a big first jump: bring the stage back whole
     if (coarse) html.style.overflow = "hidden"; // also stops a flick that is still coasting
     stage.style.touchAction = "none";
+    fit();
   }
   function unlock() { locked = false; html.style.overflow = ""; stage.style.touchAction = ""; }
   function go(n) {
@@ -344,7 +353,7 @@ export function startHome() {
       if (waiting) return; waiting = true;
       requestAnimationFrame(function () { waiting = false; fromScroll(); });
     }, { passive: true });
-    window.addEventListener("resize", function () { measure(); if (step >= 1) paint(step - 1, 1, facts[step - 1].to || 0); });
+    window.addEventListener("resize", function () { fit(); measure(); if (step >= 1) paint(step - 1, 1, facts[step - 1].to || 0); });
     // one swipe, one fact
     window.addEventListener("touchstart", function (e) {
       touching = true; skipGesture = false; touchY = e.touches[0].clientY; clearTimeout(idle);

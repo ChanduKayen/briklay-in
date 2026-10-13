@@ -47,13 +47,14 @@ body:has(.pg) { background: var(--paper); color: var(--ink); font-family: var(--
 .link:active svg { transform: translateX(3px); }
 
 /* ── hero: an arch that opens into the whole screen as you scroll ── */
-.hdr { position: relative; z-index: 5; background: var(--teal); color: var(--cream); }
-.hdr .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-.brand { display: flex; align-items: center; gap: 9px; font-family: var(--wordmark); font-size: 1.25rem; letter-spacing: 0.02em; }
-.brand svg { width: 22px; height: 23px; }
-.hdr-wa { display: grid; place-items: center; width: 44px; height: 44px; margin-right: -10px; }
-.hdr-wa svg { width: 22px; height: 22px; }
-.sc-copy { position: relative; z-index: 1; padding-top: 30px; }
+.hdr { position: relative; z-index: 5; color: var(--teal); }
+.hdr .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; min-height: 44px; font-family: var(--wordmark); font-size: 1.375rem; letter-spacing: 0.02em; }
+.brand svg { width: 25px; height: 26px; }
+.hdr-wa { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px 0 12px; border-radius: 999px; background: var(--wash); font-size: 0.875rem; font-weight: 550; color: var(--ink); transition: transform 0.4s var(--ease); }
+.hdr-wa:active { transform: scale(0.96); }
+.hdr-wa svg { width: 17px; height: 17px; }
+.sc-copy { position: relative; z-index: 1; padding-top: 20px; }
 .sc-copy h1 { font-size: clamp(3rem, 14vw, 5.75rem); font-weight: 600; line-height: 0.98; letter-spacing: -0.055em; }
 .sc-copy h1 span { display: block; margin-bottom: 0.3em; font-size: 0.56em; line-height: 1.05; letter-spacing: -0.04em; color: rgb(12 47 48 / 0.5); }
 .say { margin-top: 24px; max-width: 21rem; font-size: 1.3125rem; font-weight: 450; line-height: 1.32; letter-spacing: -0.022em; color: var(--mute); }
@@ -97,8 +98,9 @@ body:has(.pg) { background: var(--paper); color: var(--ink); font-family: var(--
 .scene { position: relative; }
 /* a little slack under the stage, so the first movement of the page does not move the picture */
 .scene.live { height: 140vh; height: 140svh; }
-.scene.live .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.scene.live .hdr { transition: background 0.3s ease 0.1s; }
+/* the stage is as tall as the screen really is at that moment: phones grow the screen when their address bar slides away */
+.scene.live .stage { position: sticky; top: 0; height: 100vh; height: var(--stage-h, 100svh); overflow: hidden; }
+.scene.live .hdr, .scene.live .hdr-wa { transition: color 0.3s ease 0.1s, background 0.3s ease 0.1s, transform 0.4s var(--ease); }
 .scene.live .sc-copy { transition: opacity 0.4s ease, transform 0.7s var(--ease); }
 .scene.live .arch-rise { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .scene.live .arch { position: absolute; left: 50%; bottom: 0; width: var(--w0, 240px); height: var(--h0, 280px); margin-left: calc(var(--w0, 240px) / -2); border-radius: calc(var(--w0, 240px) / 2) calc(var(--w0, 240px) / 2) 0 0; transform-origin: 50% 100%; will-change: transform; transition: transform 1.05s cubic-bezier(0.7, 0, 0.18, 1); }
@@ -138,7 +140,10 @@ body:has(.pg) { background: var(--paper); color: var(--ink); font-family: var(--
 .scene.live.open .arch { transform: scale(var(--s, 5.5)); }
 .scene.live.open .sc-copy { opacity: 0; transform: translateY(-56px); pointer-events: none; transition: opacity 0.3s ease, transform 0.7s var(--ease); }
 .scene.live.open .arch-mark, .scene.live.open .cue { opacity: 0; }
-.scene.live.open .hdr { background: transparent; transition-delay: 0.5s; }
+.scene.live.open .hdr { color: var(--cream); transition-delay: 0.5s; }
+.scene.live.open .hdr-wa { background: rgb(241 230 207 / 0.14); color: var(--cream); transition-delay: 0.5s; }
+/* and nothing light can show around the opened arch, whatever the screen does */
+.scene.live.open { background: #082829; transition: background 0s linear 0.95s; }
 .scene.live.open .dots { opacity: 1; transition-delay: 0.7s; }
 .scene.live.open .facts li.on { transition-delay: 0.55s; }
 .scene.live.open.was-open .facts li.on { transition-delay: 0.12s; }

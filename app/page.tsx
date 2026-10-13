@@ -4,7 +4,7 @@ import HomeBehaviour from "./_home/home-behaviour";
 import { MARKUP } from "./_home/markup";
 import "./_home/home.css";
 
-export const viewport: Viewport = { themeColor: "#0e3b3c" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 const BUSINESS = {
   "@context": "https://schema.org",
