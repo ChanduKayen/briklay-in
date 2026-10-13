@@ -7,7 +7,6 @@ export function startHome() {
   root.dataset.started = "1";
   var $ = function (id) { return doc.getElementById(id); };
   var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var ESTIMATOR = "/costestimator";
   var WA = "https://wa.me/918330972705?text=";
   var MESSAGES = {
     hello: "Hi Briklay, I am planning to build a home in Kakinada and would like to talk.",
@@ -17,7 +16,6 @@ export function startHome() {
     homes: "Hi Briklay, I saw your homes on briklay.in. Please send me more photos and details."
   };
   doc.querySelectorAll("[data-wa]").forEach(function (a) { a.href = WA + encodeURIComponent(MESSAGES[a.dataset.wa]); });
-  $("ftrEst").href = ESTIMATOR;
   root.classList.add("js");
 
   function seen(el, fn, opts) {
@@ -43,12 +41,13 @@ export function startHome() {
     { say: "G+3", name: "G+3", sub: "Ground and three floors above" },
     { say: "G+4", name: "G+4", sub: "Ground and four floors above" }
   ];
-  // the starting rate depends on what stands at ground level
+  // the starting rate: smaller homes cost more per sq ft, and what stands at ground level adds to it
   var STILT = [
-    { say: "stilt parking", sub: "The whole ground level is open parking.", rate: 2000 },
-    { say: "part stilt", sub: "Parking, with a room or two beside it.", rate: 2100 },
-    { say: "no stilt", sub: "Every floor is built. Parking is a bay inside the ground floor.", rate: 2200 }
+    { say: "stilt parking", sub: "The whole ground level is open parking.", add: 0 },
+    { say: "part stilt", sub: "Parking, with a room or two beside it.", add: 100 },
+    { say: "no stilt", sub: "Every floor is built. Parking is a bay inside the ground floor.", add: 200 }
   ];
+  var baseRate = function (sft) { return sft < 5000 ? 2100 : sft <= 10000 ? 2000 : 1800; };
   var home = { w: 30, d: 40, floors: 2, stilt: 0 };
   function money(v) {
     if (v >= 10000000) return "₹" + (v / 10000000).toFixed(2) + " crore";
@@ -56,8 +55,8 @@ export function startHome() {
   }
   function price() {
     var slab = Math.round(Math.max(0, home.d - SETBACK.front - SETBACK.rear) * Math.max(0, home.w - SETBACK.left - SETBACK.right));
-    var sft = slab * home.floors, st = STILT[home.stilt];
-    return { slab: slab, sft: sft, rate: st.rate, total: st.rate * sft, st: st };
+    var sft = slab * home.floors, st = STILT[home.stilt], base = baseRate(sft), rate = base + st.add;
+    return { slab: slab, sft: sft, base: base, rate: rate, total: rate * sft, st: st };
   }
 
   /* the figure: only the characters that change turn over */
@@ -118,7 +117,7 @@ export function startHome() {
     draw();
     $("floorsHint").textContent = fl.sub;
     $("stiltNote").textContent = p.st.sub;
-    STILT.forEach(function (st, i) { $("st-" + i + "-d").textContent = "₹" + n(st.rate) + " per sq ft"; });
+    STILT.forEach(function (st, i) { $("st-" + i + "-d").textContent = "₹" + n(p.base + st.add) + " per sq ft"; });
     $("ansPre").innerHTML = "<b>" + (home.floors === 1 ? "Ground-floor" : fl.name) + " home</b> on a " + esc(plot) + " ft plot";
     var text = p.total ? money(p.total) : "—";
     roll(text);
@@ -129,7 +128,6 @@ export function startHome() {
       ? "Hi Briklay, I want to build a " + fl.say + " home with " + p.st.say + " on a " + plot + " ft plot in Kakinada. Your website shows it starting from " + text + " (" + n(p.sft) + " sq ft, from ₹" + n(p.rate) + " per sq ft). I would like to talk."
       : MESSAGES.hello;
     $("ansWa").href = $("barWa").href = WA + encodeURIComponent(msg);
-    $("ansFull").href = ESTIMATOR + (p.total ? "?w=" + home.w + "&d=" + home.d + "&floors=" + home.floors + "&stilt=" + home.stilt : "");
   }
   $("plots").addEventListener("click", function (e) {
     var b = e.target.closest(".chip"); if (!b) return;
@@ -450,7 +448,7 @@ export function startHome() {
 
   /* ── questions ── */
   var FAQS = [
-    ["What does the price depend on?", "Mostly on how much you build and what you build it with: plot size, number of floors, how parking is handled, and the grade of materials you choose. The cost estimator shows how each choice moves the total."],
+    ["What does the price depend on?", "Mostly on how much you build and what you build it with: plot size, number of floors, how parking is handled, and the grade of materials you choose. The estimate on this page shows how the first three move the starting price."],
     ["What kind of homes do you build?", "Independent houses from a single ground floor up to G+4, and apartment buildings on stilts. Each one is designed for its plot."],
     ["Can I choose my own materials and brands?", "Yes. Every item, from cement and steel to tiles and switches, comes in three grades with named brands. Upgrade only what matters to you."],
     ["How do payments work?", "Payments are split into stages of the build and written into the agreement before work starts."],

@@ -7,7 +7,6 @@ import { ARCH_PATH } from "../_lib/arch-path";
 import { WHATSAPP_NUMBER } from "../_lib/contact";
 import {
   DEFAULT_INPUTS,
-  STILT_RATE,
   calcTotal,
   defaultSelections,
   deptStrip,
@@ -17,6 +16,7 @@ import {
   n,
   selKey,
   selectedItem,
+  startRate,
   stiltLabel,
   summaryText,
   whatsappText,
@@ -268,7 +268,7 @@ export default function Estimator() {
   );
 
   const showResult = Boolean(plot.plotL && plot.plotW && plot.slab > 0);
-  const base = STILT_RATE[plot.stilt];
+  const base = startRate(plot);
   const waHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappText(plot, sel))}`;
 
   return (

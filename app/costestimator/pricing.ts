@@ -33,12 +33,24 @@ export const WEIGHTS: Record<string, number> = {
 /** Rate multiplier per grade. */
 export const TIER_MULT: Record<Tier, number> = { std: 1.0, pre: 1.1, lux: 1.21 };
 
-/** Starting rate per sft at standard grade. What stands at ground level sets it; it changes cost, not area. */
-export const STILT_RATE: Record<Stilt, number> = {
-  "full-stilt": 2000,
-  "partial-stilt": 2100,
-  "no-stilt": 2200,
+/** What the ground level adds to the starting rate per sft. It changes cost, not area. */
+export const STILT_ADD: Record<Stilt, number> = {
+  "full-stilt": 0,
+  "partial-stilt": 100,
+  "no-stilt": 200,
 };
+
+/** Starting rate per sft (standard grade, full stilt) by project size: smaller homes cost more per sft. */
+export function baseRate(sft: number) {
+  if (sft < 5000) return 2100;
+  if (sft <= 10000) return 2000;
+  return 1800;
+}
+
+/** Starting rate per sft at standard grade for this plot. Same rule as the home page. */
+export function startRate(p: Pick<Plot, "totalSft" | "stilt">) {
+  return baseRate(p.totalSft) + (STILT_ADD[p.stilt] ?? 0);
+}
 
 export const DEFAULT_INPUTS: Inputs = {
   plotL: "",
@@ -144,7 +156,7 @@ export type Total = { rate: number; total: number; lift: number };
 
 export function calcTotal(p: Plot, sel: Selections): Total | null {
   if (!p.totalSft) return null;
-  const base = STILT_RATE[p.stilt] ?? STILT_RATE["full-stilt"];
+  const base = startRate(p);
   const rate = Math.round((base * blendedMult(sel)) / 10) * 10;
   const lift = liftCost(sel);
   return { rate, total: rate * p.totalSft + lift, lift };
@@ -175,7 +187,7 @@ export function deptStrip(d: Dept, p: Plot, sel: Selections): DeptStrip {
   const grade = score >= 1.5 ? "Luxury" : score >= 0.5 ? "Premium" : "Standard";
   if (!p.totalSft) return { rate: "—", total: "—", grade };
   const w = WEIGHTS[d.id] || d.w;
-  const base = STILT_RATE[p.stilt] ?? STILT_RATE["full-stilt"];
+  const base = startRate(p);
   const dRate = Math.round((base * deptAvgMult(d, sel)) / 10) * 10;
   return {
     rate: `${fmt(dRate)}/sft`,
