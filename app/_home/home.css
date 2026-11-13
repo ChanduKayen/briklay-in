@@ -437,3 +437,6 @@ nav .links a:hover{transition-duration:.2s}
   .pillar b{font-size:23px}
   .panel{padding-bottom:12px}
 }
+/* the panel now holds only its label and the pillars */
+.pillars{margin-top:6px}
+@media (min-width:768px){ .pillars{margin-top:22px} .pillar{padding-top:6px;padding-bottom:30px} }
