@@ -178,9 +178,35 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
   const stopGlide = () => { cancelAnimationFrame(glideRaf); glideRaf = 0; clearTimeout(glideTimer); };
   let finger = false, lastScroll = 0, wantGlide = false;
   if (touch) {
-    addEventListener('touchstart', () => { finger = true; wantGlide = false; stopGlide(); }, { passive:true });
+    addEventListener('touchstart', () => { finger = true; wantGlide = false; if (!held) stopGlide(); }, { passive:true });
     const up = () => { finger = false; }; addEventListener('touchend', up, { passive:true }); addEventListener('touchcancel', up, { passive:true });
     addEventListener('wheel', () => { wantGlide = false; stopGlide(); }, { passive:true });
+    // phones: the first swipe up does not move the page. The hero holds still, turns fully to dusk,
+    // and only then does the page travel on to the next section.
+    if (!reduce) {
+      let sy = 0, sx = 0;
+      addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { sx = t.clientX; sy = t.clientY; } heldGesture = false; }, { passive:true });
+      addEventListener('touchmove', e => {
+        if (tracking || e.touches.length > 1) return;
+        if (held || heldGesture) { if (e.cancelable) e.preventDefault(); return; }
+        if (mode !== 'day' || scrollY > 8 || !e.cancelable) return;
+        const t = e.touches[0], dy = t.clientY - sy, dx = t.clientX - sx;
+        if (dy < -6 && Math.abs(dy) > Math.abs(dx)) {
+          e.preventDefault();
+          held = heldGesture = true; mode = 'dusk'; kT = 1; wantGlide = false; stopGlide();
+          clearTimeout(heldTimer); heldTimer = setTimeout(release, 3200);
+          cue.style.opacity = 0;
+          if (!loop) { loop = true; lastT = performance.now(); requestAnimationFrame(stepK); }
+        }
+      }, { passive:false });
+    }
+  }
+  let held = false, heldGesture = false, heldTimer = 0;
+  function release(){
+    if (!held) return;
+    held = false; clearTimeout(heldTimer);
+    const how = document.getElementById('how');
+    if (scrollY < how.offsetTop - 80) glide(how.offsetTop - 64, 1400);
   }
   // wait until the dusk has played and the page has come to rest, then carry on to the next section
   function tryGlide(){
@@ -206,7 +232,7 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
       if (mode === 'day' && scrollY > 24) {
         mode = 'dusk'; kT = 1;
         if (!reduce) { wantGlide = true; clearTimeout(glideTimer); glideTimer = setTimeout(tryGlide, 900); }
-      } else if (mode === 'dusk' && scrollY < 8) { mode = 'day'; kT = 0; wantGlide = false; stopGlide(); }
+      } else if (mode === 'dusk' && scrollY < 8 && !held && !glideRaf) { mode = 'day'; kT = 0; wantGlide = false; stopGlide(); }
     } else {
       kT = ss(.06, .82, p);
     }
@@ -219,6 +245,7 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
     k += (kT - k) * (reduce ? 1 : 1 - Math.exp(-dt * (touch ? 2.4 : 3.2)));
     hero.style.setProperty('--k', k.toFixed(4));
     setDark();
+    if (held && k > .95) release();
     if (Math.abs(kT - k) > .001) requestAnimationFrame(stepK); else loop = false;
   }
   addEventListener('scroll', readScroll, { passive:true }); addEventListener('resize', readScroll); readScroll();
