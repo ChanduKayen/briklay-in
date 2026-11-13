@@ -46,11 +46,11 @@
   .pl{position:absolute;inset:0;background-size:cover;background-position:center bottom;background-repeat:no-repeat}
   .pl.lines{background-image:url(/paint/lines_desk.webp);-webkit-mask-image:linear-gradient(90deg,#000 calc(var(--rev,0) * 120% - 20%),transparent calc(var(--rev,0) * 120%));mask-image:linear-gradient(90deg,#000 calc(var(--rev,0) * 120% - 20%),transparent calc(var(--rev,0) * 120%))}
   .pl.day{background-image:url(/paint/day_desk.webp);opacity:var(--wash,0)}
-  .pl.dusk{background-image:url(/paint/dusk_desk.webp);opacity:calc(var(--k) * var(--wash,0))}
+  .pl.dusk{background-image:url(/paint/night_desk.webp);opacity:calc(var(--k) * var(--wash,0))}
   .pl.lens{opacity:var(--lens,0);-webkit-mask-image:radial-gradient(circle var(--lr,170px) at var(--mx,50%) var(--my,50%),#000 45%,transparent 100%);mask-image:radial-gradient(circle var(--lr,170px) at var(--mx,50%) var(--my,50%),#000 45%,transparent 100%)}
-  .cl{position:absolute;left:0;top:0;width:calc(100% + 1600px);height:600px;will-change:transform;background-repeat:repeat-x;background-size:1600px 600px;-webkit-mask-image:linear-gradient(#000 45%,transparent 92%);mask-image:linear-gradient(#000 45%,transparent 92%);animation:drift 190s linear infinite}
-  .cl.day{background-image:url(/paint/clouds_day.webp);mix-blend-mode:multiply;opacity:calc((1 - var(--k)) * var(--wash,0) * .85)}
-  .cl.dusk{background-image:url(/paint/clouds_dusk.webp);mix-blend-mode:screen;opacity:calc(var(--k) * var(--wash,0) * .75)}
+  .cl{position:absolute;left:0;top:0;width:calc(100% + 1600px);height:600px;will-change:transform;background-repeat:repeat-x;background-size:1600px 600px;animation:drift 190s linear infinite}
+  .cl.day{background-image:url(/paint/clouds_day_a.webp);opacity:calc((1 - var(--k)) * var(--wash,0) * .85)}
+  .cl.dusk{background-image:url(/paint/clouds_dusk_a.webp);opacity:calc(var(--k) * var(--wash,0))}
   .cl.far{top:40px;width:calc(100% + 1100px);background-size:1100px 412px;height:412px;animation:drift2 300s linear infinite reverse;opacity:calc((1 - var(--k)) * var(--wash,0) * .4)}
   @keyframes drift{to{transform:translateX(-1600px)}}
   @keyframes driftm{to{transform:translateX(-1013px)}}
@@ -63,13 +63,13 @@
   @media (prefers-reduced-motion:reduce){ .cl{animation:none} }
   .lensw{position:absolute;left:0;top:0;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;overflow:hidden;opacity:0;pointer-events:none;transform:translate3d(-9999px,-9999px,0);will-change:transform,opacity;-webkit-mask-image:radial-gradient(closest-side,#000 42%,rgba(0,0,0,.55) 70%,transparent 100%);mask-image:radial-gradient(closest-side,#000 42%,rgba(0,0,0,.55) 70%,transparent 100%)}
   .lensi{position:absolute;left:0;top:0;will-change:transform}
-  .li.dusk2{background-image:url(/paint/dusk_desk.webp)} .li.day2{background-image:url(/paint/day_desk.webp);opacity:var(--k)}
-  .pl.lens.toDusk{background-image:url(/paint/dusk_desk.webp)} .pl.lens.toDay{background-image:url(/paint/day_desk.webp)}
+  .li.dusk2{background-image:url(/paint/night_desk.webp)} .li.day2{background-image:url(/paint/day_desk.webp);opacity:var(--k)}
+  .pl.lens.toDusk{background-image:url(/paint/night_desk.webp)} .pl.lens.toDay{background-image:url(/paint/day_desk.webp)}
   @media (max-aspect-ratio:4/5){
     .cl{width:calc(100% + 1013px);height:380px;background-size:1013px 380px;animation-name:driftm} .cl.far{width:calc(100% + 693px);height:260px;background-size:693px 260px;animation-name:driftm2}
-    .pl.lines{background-image:url(/paint/lines_mob.webp)} .pl.day{background-image:url(/paint/day_mob.webp)} .pl.dusk{background-image:url(/paint/dusk_mob.webp)}
-    .li.dusk2{background-image:url(/paint/dusk_mob.webp)} .li.day2{background-image:url(/paint/day_mob.webp)}
-    .pl.lens.toDusk{background-image:url(/paint/dusk_mob.webp)} .pl.lens.toDay{background-image:url(/paint/day_mob.webp)}
+    .pl.lines{background-image:url(/paint/lines_mob.webp)} .pl.day{background-image:url(/paint/day_mob.webp)} .pl.dusk{background-image:url(/paint/night_mob.webp)}
+    .li.dusk2{background-image:url(/paint/night_mob.webp)} .li.day2{background-image:url(/paint/day_mob.webp)}
+    .pl.lens.toDusk{background-image:url(/paint/night_mob.webp)} .pl.lens.toDay{background-image:url(/paint/day_mob.webp)}
   }
   @media (max-width:640px){ .hero{--lr:118px} }
   .hero .copy h1,.hero .sub,.hero .price,.hero .price b,.cue .scroll{transition:color .5s}
@@ -261,7 +261,7 @@
   .mcard .go{margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
 
   /* ---------- closing ---------- */
-  .close{background:linear-gradient(rgba(24,28,54,.5),rgba(18,24,40,.72)),url(/paint/dusk_desk.webp) center 22%/cover;color:#fff;text-align:center;padding:110px 0}
+  .close{background:linear-gradient(rgba(24,28,54,.5),rgba(18,24,40,.72)),url(/paint/night_desk.webp) center 22%/cover;color:#fff;text-align:center;padding:110px 0}
   .close h2{font-size:40px;line-height:1.08;letter-spacing:-.03em}
   .close p{margin:18px auto 0;max-width:26rem;font-size:15px;line-height:1.6;color:rgba(255,255,255,.65)}
   .close .btn{margin-top:30px;background:#fbf8f2;color:var(--ink);padding:14px 28px;box-shadow:0 14px 30px -14px rgba(0,0,0,.6)}
@@ -348,7 +348,7 @@
 
 /* ---------- day to dusk: every colour changes on one clock ---------- */
 .pg{--flip:.9s cubic-bezier(.45,0,.25,1)}
-.pl.day,.pl.dusk{will-change:opacity}
+.pl.dusk{will-change:opacity}
 .hero.away .cl{animation-play-state:paused}
 .hero .copy h1,.hero .sub,.hero .price,.hero .price b,.hero .price i,.cue .scroll{transition:color var(--flip),background-color var(--flip),box-shadow var(--flip)}
 .hint{transition:opacity .6s,color var(--flip),background-color var(--flip)}
@@ -394,22 +394,27 @@ nav .links a:hover{transition-duration:.2s}
   .faq details::details-content{transition:none}
 }
 
-/* ---------- the dusk sky: deeper overhead, warm at the horizon, with stars and a moon ---------- */
-.sky,.stars,.moon{position:absolute;pointer-events:none}
-.sky{inset:0;opacity:calc(var(--k) * var(--wash,0));will-change:opacity;
-  background:
-    radial-gradient(120% 46% at 50% 82%,rgba(255,168,96,.2),rgba(255,168,96,0) 70%),
-    radial-gradient(90% 60% at 50% -8%,rgba(8,9,34,.5),rgba(8,9,34,0) 72%),
-    linear-gradient(to bottom,rgba(13,15,46,.62) 0%,rgba(20,22,62,.44) 24%,rgba(30,30,78,.2) 46%,rgba(30,30,78,0) 62%)}
-.stars{inset:0;opacity:calc(max(0, var(--k) - .45) * 1.82 * var(--wash,0));-webkit-mask-image:linear-gradient(#000 0,#000 30%,transparent 58%);mask-image:linear-gradient(#000 0,#000 30%,transparent 58%)}
-.stars i{position:absolute;inset:0;animation:twinkle 5.5s ease-in-out infinite alternate;will-change:opacity}
-.stars i + i{animation-duration:7.5s;animation-delay:-3s;animation-direction:alternate-reverse}
-@keyframes twinkle{from{opacity:.35}to{opacity:1}}
-.moon{left:76%;top:14%;width:58px;height:58px;border-radius:50%;transform:rotate(-24deg);
-  box-shadow:inset -15px 5px 0 0 #f7ecd0;filter:blur(.5px) drop-shadow(0 0 16px rgba(255,232,182,.55)) drop-shadow(0 0 44px rgba(255,214,150,.28));
+/* ---------- dusk: a crescent moon on wider screens ---------- */
+.moon{position:absolute;pointer-events:none;left:77%;top:15%;width:46px;height:46px;border-radius:50%;transform:rotate(-24deg);
+  box-shadow:inset -11px 4px 0 0 #f3e7c8;
   opacity:calc(max(0, var(--k) - .4) * 1.6 * var(--wash,0))}
-@media (max-aspect-ratio:4/5){ .moon{display:none} .sky{background:
-    radial-gradient(140% 36% at 50% 80%,rgba(255,168,96,.18),rgba(255,168,96,0) 70%),
-    linear-gradient(to bottom,rgba(11,13,42,.66) 0%,rgba(18,20,58,.48) 22%,rgba(30,30,78,.2) 42%,rgba(30,30,78,0) 56%)} }
-.hero.away .stars i{animation-play-state:paused}
-@media (prefers-reduced-motion:reduce){ .stars i{animation:none} }
+@media (max-aspect-ratio:4/5){ .moon{display:none} }
+
+/* ---------- hero copy: a quieter heading, set further from the top ---------- */
+.copy{padding-top:100px}
+.cue .scroll{text-shadow:0 0 6px #f8f4ec,0 0 12px #f8f4ec}
+.hero.dark .cue .scroll{text-shadow:none}
+.hero h1{font-size:27px;line-height:1.12}
+.sub{margin-top:12px}
+.cta{margin-top:20px}
+/* no frosted glass over the moving sky: solid tints hold steady while the light changes */
+.price{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(251,248,242,.94)}
+.hero.dark .price{background:rgba(22,25,54,.82)}
+.hint{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(255,255,255,.86)}
+.hero.dark .hint{background:rgba(22,25,54,.8)}
+/* the scrim behind the copy is deeper at dusk, so cream text always has dark behind it */
+.copy::after{background:radial-gradient(closest-side,rgba(14,16,44,.62),rgba(14,16,44,.34) 55%,rgba(14,16,44,0))}
+@media (min-width:640px){ .copy{padding-top:132px} .hero h1{font-size:33px} .sub{margin-top:18px} .cta{margin-top:26px} }
+@media (min-width:768px){ .copy{padding-top:148px} .hero h1{font-size:38px} }
+@media (min-width:1024px){ .copy{padding-top:152px} .hero h1{font-size:44px} }
+@media (max-height:720px) and (max-width:639px){ .copy{padding-top:92px} .sub{margin-top:10px} .cta{margin-top:14px} }
