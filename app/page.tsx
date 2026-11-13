@@ -4,7 +4,7 @@ import HomeBehaviour from "./_home/home-behaviour";
 import { MARKUP } from "./_home/markup";
 import "./_home/home.css";
 
-export const viewport: Viewport = { themeColor: "#ffffff" };
+export const viewport: Viewport = { themeColor: "#f8f4ec" };
 
 const BUSINESS = {
   "@context": "https://schema.org",
@@ -25,7 +25,13 @@ const BUSINESS = {
 export default function Home() {
   return (
     <>
-      <link rel="preload" as="font" type="font/woff2" href="/fonts/geist-latin.woff2" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..500,0..100,0..1&family=Inter:wght@300;400;500;600&display=swap"
+        precedence="default"
+      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BUSINESS) }} />
       <div className="pg" id="pg" dangerouslySetInnerHTML={{ __html: MARKUP }} />
       <HomeBehaviour />
