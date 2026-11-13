@@ -55,7 +55,7 @@ window.updateDock = function(e){
 })();
 
 /* ---------- reveal ---------- */
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { const t = e.target; t.classList.add('in'); io.unobserve(t); setTimeout(() => { t.style.transitionDelay = ''; t.classList.add('shown'); }, 900 + (parseFloat(t.style.transitionDelay) || 0)); } }), { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
 document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay = (el.parentElement.querySelectorAll(':scope > .rv').length > 1 ? ([...el.parentElement.children].indexOf(el) % 6) * 70 : 0) + 'ms'; io.observe(el); });
 
 /* ---------- quality log ticking ---------- */
@@ -100,10 +100,23 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
     if (n >= 1e7) return ['₹' + (n / 1e7).toFixed(2), 'crore'];
     return ['₹' + (n / 1e5).toFixed(1), 'lakh'];
   }
+  let shown = null, totalRaf = 0;
+  const calmNum = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function paintTotal(n){ const [v, u] = money(n); $('total').innerHTML = v + '<small>' + u + '</small>'; }
+  function showTotal(to){
+    cancelAnimationFrame(totalRaf);
+    if (shown === null || calmNum) { shown = to; paintTotal(to); return; }
+    const from = shown, t0 = performance.now();
+    (function f(now){
+      const e = Math.min(1, (now - t0) / 420), q = 1 - Math.pow(1 - e, 3);
+      shown = from + (to - from) * q; paintTotal(e < 1 ? shown : to);
+      if (e < 1) totalRaf = requestAnimationFrame(f); else shown = to;
+    })(t0);
+  }
   function render(){
     const area = Math.round(st.w * st.d * COVER) * st.f, rate = RATES[st.p], total = area * rate;
     const [v, u] = money(total);
-    $('total').innerHTML = v + '<small>' + u + '</small>';
+    showTotal(total);
     $('area').textContent = fmtINR(area) + ' sq ft';
     $('rate').textContent = '₹' + fmtINR(rate) + ' / sq ft';
     const fl = st.f === 1 ? 'G' : 'G+' + (st.f - 1);
@@ -150,6 +163,8 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
     if (e < 2.9 && !reduce) requestAnimationFrame(reveal);
   }
   const go = () => requestAnimationFrame(reveal);
+  const dusk = new Image(); dusk.src = getComputedStyle(document.querySelector('.pl.dusk')).backgroundImage.slice(5, -2);
+  if (dusk.decode) dusk.decode().catch(() => {});
   day.complete ? go() : (day.onload = go, day.onerror = go);
 
   // 2. scroll: day into dusk, eased so a fast flick never snaps the light
@@ -158,33 +173,52 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
   function glide(to, dur){
     cancelAnimationFrame(glideRaf);
     const from = scrollY, t0 = performance.now(), ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    (function f(now){ const e = Math.min(1, (now - t0) / dur); scrollTo(0, from + (to - from) * ease(e)); if (e < 1) glideRaf = requestAnimationFrame(f); })(t0);
+    (function f(now){ const e = Math.min(1, (now - t0) / dur); scrollTo({ top: from + (to - from) * ease(e), behavior: 'instant' }); glideRaf = e < 1 ? requestAnimationFrame(f) : 0; })(t0);
   }
-  const stopGlide = () => { cancelAnimationFrame(glideRaf); clearTimeout(glideTimer); };
-  if (touch) addEventListener('touchstart', stopGlide, { passive:true });
+  const stopGlide = () => { cancelAnimationFrame(glideRaf); glideRaf = 0; clearTimeout(glideTimer); };
+  let finger = false, lastScroll = 0, wantGlide = false;
+  if (touch) {
+    addEventListener('touchstart', () => { finger = true; wantGlide = false; stopGlide(); }, { passive:true });
+    const up = () => { finger = false; }; addEventListener('touchend', up, { passive:true }); addEventListener('touchcancel', up, { passive:true });
+    addEventListener('wheel', () => { wantGlide = false; stopGlide(); }, { passive:true });
+  }
+  // wait until the dusk has played and the page has come to rest, then carry on to the next section
+  function tryGlide(){
+    clearTimeout(glideTimer);
+    if (!wantGlide || mode !== 'dusk') return;
+    const how = document.getElementById('how');
+    if (scrollY >= how.offsetTop - 80) { wantGlide = false; return; }
+    if (finger || k < .93 || performance.now() - lastScroll < 260) { glideTimer = setTimeout(tryGlide, 120); return; }
+    wantGlide = false; glide(how.offsetTop - 64, 1400);
+  }
+  // one switch for every colour that changes with the light; the gap between on and off stops it chattering
+  let dark = false;
+  function setDark(){
+    if (!dark && k > .56) dark = true; else if (dark && k < .44) dark = false;
+    hero.classList.toggle('dark', dark);
+    nav.classList.toggle('ondark', dark && wrap.getBoundingClientRect().bottom > 80);
+  }
   function readScroll(){
     p = Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / (wrap.offsetHeight - innerHeight)));
     if (touch) {
       // phones: the first swipe plays the whole dusk, then the page glides on to the next section
-      if (mode === 'day' && scrollY > 6) {
+      if (!glideRaf) lastScroll = performance.now();
+      if (mode === 'day' && scrollY > 24) {
         mode = 'dusk'; kT = 1;
-        clearTimeout(glideTimer);
-        glideTimer = setTimeout(() => { const how = document.getElementById('how'); if (scrollY < how.offsetTop - 40) glide(how.offsetTop - 64, 1300); }, 1700);
-      } else if (mode === 'dusk' && scrollY < 4) { mode = 'day'; kT = 0; stopGlide(); }
+        if (!reduce) { wantGlide = true; clearTimeout(glideTimer); glideTimer = setTimeout(tryGlide, 900); }
+      } else if (mode === 'dusk' && scrollY < 8) { mode = 'day'; kT = 0; wantGlide = false; stopGlide(); }
     } else {
       kT = ss(.06, .82, p);
     }
     cue.style.opacity = (1 - ss(0, .12, touch ? (mode === 'dusk' ? 1 : 0) : p)).toFixed(3);
-    nav.classList.toggle('ondark', k > .5 && wrap.getBoundingClientRect().bottom > 80);
+    setDark();
     if (!loop) { loop = true; lastT = performance.now(); requestAnimationFrame(stepK); }
   }
   function stepK(now){
     const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
     k += (kT - k) * (reduce ? 1 : 1 - Math.exp(-dt * (touch ? 2.4 : 3.2)));
     hero.style.setProperty('--k', k.toFixed(4));
-    const dark = k > .5;
-    hero.classList.toggle('dark', dark);
-    nav.classList.toggle('ondark', dark && wrap.getBoundingClientRect().bottom > 80);
+    setDark();
     if (Math.abs(kT - k) > .001) requestAnimationFrame(stepK); else loop = false;
   }
   addEventListener('scroll', readScroll, { passive:true }); addEventListener('resize', readScroll); readScroll();
@@ -234,6 +268,13 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
     }
     build(); mq.addEventListener ? mq.addEventListener('change', build) : mq.addListener(build);
   })();
+
+  // the clouds and the figures rest while the hero is off screen
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => {
+    hero.classList.toggle('away', !e.isIntersecting);
+    const st = document.getElementById('story');
+    try { e.isIntersecting ? st.unpauseAnimations() : st.pauseAnimations(); } catch (_) {}
+  })).observe(hero);
 
   // 3. light lens: a small disc moved by the compositor, never a full-screen repaint
   const lensIn = lens.firstElementChild;

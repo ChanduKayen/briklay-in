@@ -42,20 +42,20 @@
   /* ---------- hero ---------- */
   .hero{position:relative;display:flex;flex-direction:column;align-items:center;height:100svh;min-height:600px;overflow:hidden}
   .hero{--k:0;background:#f8f4ec;touch-action:pan-y;perspective:1400px}
-  .sheet{position:absolute;inset:-14px;z-index:0;transform-style:preserve-3d;will-change:transform}
+  .sheet{position:absolute;inset:-14px;z-index:0;will-change:transform}
   .pl{position:absolute;inset:0;background-size:cover;background-position:center bottom;background-repeat:no-repeat}
   .pl.lines{background-image:url(/paint/lines_desk.webp);-webkit-mask-image:linear-gradient(90deg,#000 calc(var(--rev,0) * 120% - 20%),transparent calc(var(--rev,0) * 120%));mask-image:linear-gradient(90deg,#000 calc(var(--rev,0) * 120% - 20%),transparent calc(var(--rev,0) * 120%))}
   .pl.day{background-image:url(/paint/day_desk.webp);opacity:var(--wash,0)}
   .pl.dusk{background-image:url(/paint/dusk_desk.webp);opacity:calc(var(--k) * var(--wash,0))}
   .pl.lens{opacity:var(--lens,0);-webkit-mask-image:radial-gradient(circle var(--lr,170px) at var(--mx,50%) var(--my,50%),#000 45%,transparent 100%);mask-image:radial-gradient(circle var(--lr,170px) at var(--mx,50%) var(--my,50%),#000 45%,transparent 100%)}
-  .cl{position:absolute;left:0;right:0;top:0;height:600px;background-repeat:repeat-x;background-size:1600px 600px;-webkit-mask-image:linear-gradient(#000 45%,transparent 92%);mask-image:linear-gradient(#000 45%,transparent 92%);animation:drift 190s linear infinite}
+  .cl{position:absolute;left:0;top:0;width:calc(100% + 1600px);height:600px;will-change:transform;background-repeat:repeat-x;background-size:1600px 600px;-webkit-mask-image:linear-gradient(#000 45%,transparent 92%);mask-image:linear-gradient(#000 45%,transparent 92%);animation:drift 190s linear infinite}
   .cl.day{background-image:url(/paint/clouds_day.webp);mix-blend-mode:multiply;opacity:calc((1 - var(--k)) * var(--wash,0) * .85)}
   .cl.dusk{background-image:url(/paint/clouds_dusk.webp);mix-blend-mode:screen;opacity:calc(var(--k) * var(--wash,0) * .75)}
-  .cl.far{top:40px;background-size:1100px 412px;height:412px;animation:drift2 300s linear infinite reverse;opacity:calc((1 - var(--k)) * var(--wash,0) * .4)}
-  @keyframes drift{from{background-position-x:0}to{background-position-x:-1600px}}
-  @keyframes driftm{from{background-position-x:0}to{background-position-x:-1013px}}
-  @keyframes driftm2{from{background-position-x:0}to{background-position-x:-693px}}
-  @keyframes drift2{from{background-position-x:0}to{background-position-x:-1100px}}
+  .cl.far{top:40px;width:calc(100% + 1100px);background-size:1100px 412px;height:412px;animation:drift2 300s linear infinite reverse;opacity:calc((1 - var(--k)) * var(--wash,0) * .4)}
+  @keyframes drift{to{transform:translateX(-1600px)}}
+  @keyframes driftm{to{transform:translateX(-1013px)}}
+  @keyframes driftm2{to{transform:translateX(-693px)}}
+  @keyframes drift2{to{transform:translateX(-1100px)}}
   .story{position:absolute;inset:0;width:100%;height:100%;opacity:var(--wash,0);pointer-events:none}
   .story .geo{fill:#2a3533;opacity:calc(.5 + var(--k) * .3)}
   .story .ln{fill:none;stroke:#1d1b1a;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
@@ -66,7 +66,7 @@
   .li.dusk2{background-image:url(/paint/dusk_desk.webp)} .li.day2{background-image:url(/paint/day_desk.webp);opacity:var(--k)}
   .pl.lens.toDusk{background-image:url(/paint/dusk_desk.webp)} .pl.lens.toDay{background-image:url(/paint/day_desk.webp)}
   @media (max-aspect-ratio:4/5){
-    .cl{height:380px;background-size:1013px 380px;animation-name:driftm} .cl.far{height:260px;background-size:693px 260px;animation-name:driftm2}
+    .cl{width:calc(100% + 1013px);height:380px;background-size:1013px 380px;animation-name:driftm} .cl.far{width:calc(100% + 693px);height:260px;background-size:693px 260px;animation-name:driftm2}
     .pl.lines{background-image:url(/paint/lines_mob.webp)} .pl.day{background-image:url(/paint/day_mob.webp)} .pl.dusk{background-image:url(/paint/dusk_mob.webp)}
     .li.dusk2{background-image:url(/paint/dusk_mob.webp)} .li.day2{background-image:url(/paint/day_mob.webp)}
     .pl.lens.toDusk{background-image:url(/paint/dusk_mob.webp)} .pl.lens.toDay{background-image:url(/paint/day_mob.webp)}
@@ -345,3 +345,51 @@
   @media (min-width:1024px){ h1{font-size:52px} .copy{padding-top:118px} .how{margin-top:-8px} }
   @media (max-height:720px) and (max-width:639px){ .copy{padding-top:80px} .sub{margin-top:12px} .cta{margin-top:16px} }
   @media (prefers-reduced-motion:reduce){ .rv{opacity:1;transform:none;transition:none} .msg{opacity:1;transform:none} html{scroll-behavior:auto} }
+
+/* ---------- day to dusk: every colour changes on one clock ---------- */
+.pg{--flip:.9s cubic-bezier(.45,0,.25,1)}
+.pl.day,.pl.dusk{will-change:opacity}
+.hero.away .cl{animation-play-state:paused}
+.hero .copy h1,.hero .sub,.hero .price,.hero .price b,.hero .price i,.cue .scroll{transition:color var(--flip),background-color var(--flip),box-shadow var(--flip)}
+.hint{transition:opacity .6s,color var(--flip),background-color var(--flip)}
+.copy::before,.copy::after{transition:opacity var(--flip)}
+.hero .cta{transition:background-color var(--flip),color var(--flip),box-shadow var(--flip),transform .2s}
+.hero.dark .cta{box-shadow:0 12px 26px -14px rgba(0,0,0,.75)}
+.hero.dark .price i{color:rgba(251,247,239,.35)}
+.hero.dark .hint{color:rgba(251,247,239,.88);background:rgba(26,30,58,.5)}
+/* the scroll line takes its colour from the text, so it fades with it instead of swapping */
+.cue .scroll i,.hero.dark .cue .scroll i{background:linear-gradient(currentColor,transparent);opacity:.8}
+nav .brand,nav .links a,nav .btn{transition:color var(--flip),background-color var(--flip),transform .2s}
+nav{transition:background-color .35s,box-shadow .35s}
+nav.solid .brand,nav.solid .links a,nav.solid .btn{transition-duration:.35s}
+nav .links a:hover{transition-duration:.2s}
+
+/* ---------- touch and press ---------- */
+.pg a,.pg button,.pg summary{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.pg{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.pg h1,.pg h2{text-wrap:balance}
+.btn{transition:background-color .2s,transform .2s}
+.btn:active,.chip:active,.seg button:active,.seal:active .seal-btn{transform:scale(.97)}
+.chip,.seg button{transition:background-color .2s,color .2s,box-shadow .2s,transform .2s}
+.item:active{background:var(--row-hover)}
+.mcard:active{background:var(--row-hover)}
+.seal-btn{transition:box-shadow .3s,color .5s,transform .2s}
+.pg :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:6px}
+.hero.dark :focus-visible,.close :focus-visible{outline-color:#fbf7ef}
+/* things that reveal on scroll keep their own hover feedback afterwards */
+.mcard.rv{transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1),background-color .2s}
+.btn.rv.shown{transition:background-color .2s,transform .2s}
+.tile img{transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover){ .tile:hover img{transform:scale(1.03)} }
+
+/* ---------- answers open and close smoothly where the browser can ---------- */
+@supports (interpolate-size:allow-keywords){
+  .faq details{interpolate-size:allow-keywords}
+  .faq details::details-content{block-size:0;overflow:clip;opacity:0;transition:block-size .4s cubic-bezier(.3,.7,.2,1),opacity .3s,content-visibility .4s allow-discrete}
+  .faq details[open]::details-content{block-size:auto;opacity:1}
+}
+@media (prefers-reduced-motion:reduce){
+  .pg{--flip:.01s}
+  .tile img,.btn,.chip,.seg button{transition:none}
+  .faq details::details-content{transition:none}
+}
