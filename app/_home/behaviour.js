@@ -296,6 +296,21 @@ document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay =
     build(); mq.addEventListener ? mq.addEventListener('change', build) : mq.addListener(build);
   })();
 
+  // stars: two scattered layers that brighten and dim against each other
+  (function(){
+    const layers = document.querySelectorAll('#stars i'); let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    layers.forEach(el => {
+      const dots = [];
+      for (let i = 0; i < 46; i++) {
+        const x = (rnd() * 100).toFixed(2), y = (Math.pow(rnd(), 1.5) * 56).toFixed(2), big = rnd() > .86;
+        const r = big ? 1.5 + rnd() * .7 : .6 + rnd() * .6, a = (big ? .95 : .5 + rnd() * .4).toFixed(2);
+        dots.push('radial-gradient(circle at ' + x + '% ' + y + '%,rgba(255,246,224,' + a + ') 0,rgba(255,246,224,' + a + ') ' + r.toFixed(2) + 'px,rgba(255,246,224,0) ' + (r * (big ? 3 : 1.8)).toFixed(2) + 'px)');
+      }
+      el.style.background = dots.join(',');
+    });
+  })();
+
   // the clouds and the figures rest while the hero is off screen
   if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => {
     hero.classList.toggle('away', !e.isIntersecting);
