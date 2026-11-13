@@ -440,3 +440,21 @@ nav .links a:hover{transition-duration:.2s}
 /* the panel now holds only its label and the pillars */
 .pillars{margin-top:6px}
 @media (min-width:768px){ .pillars{margin-top:22px} .pillar{padding-top:6px;padding-bottom:30px} }
+
+/* ---------- a real page from the site book ---------- */
+.book{margin-top:64px}
+.book-head{display:grid;gap:10px;max-width:40rem}
+.book-cap{font-size:14.5px;line-height:1.65;color:var(--ink-70)}
+.book-page{position:relative;display:block;margin-top:22px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;box-shadow:0 30px 60px -40px rgba(22,48,43,.35)}
+/* on a phone the page keeps a readable size and slides sideways under the finger */
+.book-scroll{display:block;max-height:400px;overflow:auto hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.book-scroll::-webkit-scrollbar{display:none}
+.book-scroll img{display:block;width:920px;max-width:none;height:auto}
+.book-page::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 78%)}
+.book-open{position:absolute;z-index:1;left:50%;bottom:16px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 10px 22px -12px rgba(22,48,43,.7)}
+.book-page:hover .arrow{transform:translateX(2px)}
+@media (min-width:768px){
+  .book{margin-top:88px}
+  .book-scroll{max-height:520px;overflow:hidden}
+  .book-scroll img{width:100%}
+}
